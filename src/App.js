@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container } from 'semantic-ui-react';
 import LoginForm from './Components/LoginForm';
 import 'semantic-ui-css/semantic.min.css';
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firebase-firestore";
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, ListItemIcon, IconButton } from '@material-ui/core';
-import MailIcon from '@material-ui/icons/Mail';
+import { makeStyles } from '@material-ui/core/styles';
+import { AppBar, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
 
 import GoogleMapReact from 'google-map-react';
-
-const AnyReactComponent = ({ text }) => <div>{text}</div>;
 
 firebase.initializeApp({
   apiKey: "AIzaSyCP46j4c3quwFHwQRxgD-E3T4SwZEa2qog",
@@ -66,6 +61,7 @@ function App() {
     lat: 47.6593953,
     lng: -122.3093366
   });
+  const [locations, setLocations] = useState([]);
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(x => {
       setCoords({
@@ -79,9 +75,18 @@ function App() {
     setMobileOpen(!mobileOpen);
   };
   useEffect(() => {
-    db.collection("plugs")
+    db.collection("plugs").where('available', "==", true)
       .onSnapshot(function(doc) {
-        console.log(doc.docs);
+        setLocations(doc.docs.map((x, i) => {
+          let y = x.data();
+          return (<img key={i}
+              src="/marker.svg"
+              lat={y.location.latitude}
+              lng={y.location.longitude}
+              alt={y.name}
+              style={{ zIndex: 1500, width: 'auto', height: '2rem', top: '0px' }}
+            />);
+        }));
     });
   }, []);
   const drawer = (
@@ -141,12 +146,9 @@ function App() {
             bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
             defaultCenter={coords}
             defaultZoom={15}
+            yesIWantToUseGoogleMapApiInternals
           >
-            <AnyReactComponent
-              lat={59.955413}
-              lng={30.337844}
-              text="My Marker"
-            />
+            {locations}
           </GoogleMapReact>
         </div>
       ) : (
