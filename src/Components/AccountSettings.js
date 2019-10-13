@@ -6,7 +6,6 @@ import axios from 'axios';
 
 export default function AccountSettings ({ firebase }) {
   const db = firebase.firestore();
-  let [ errorMessage, setErrorMessage ] = useState("");
   let [ c, setC ] = useState(undefined);
   useEffect(() => {
     db.collection('plugs').where('user', '==', firebase.auth().currentUser.uid).get()
@@ -18,9 +17,6 @@ export default function AccountSettings ({ firebase }) {
   return (
     <Container>
       <h1>Account Settings</h1>
-      {errorMessage && (
-        <Message error>{errorMessage.message}</Message>
-      )}
         {c && (
           <Formik
             initialValues={{ address: c.address, phone: c.phone }}

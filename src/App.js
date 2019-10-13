@@ -62,6 +62,7 @@ function App() {
   const [dockOpen, setDockOpen] = useState(false);
   const [dockInfo, setDockInfo] = useState();
   let [ c, setC ] = useState(false);
+  let [ available, setA ] = useState(false);
   const [coords, setCoords] = useState({
     lat: 47.6593953,
     lng: -122.3093366
@@ -83,6 +84,19 @@ function App() {
     setDockOpen(!dockOpen);
     setDockInfo();
   };
+
+  const toggleAvailability = (e) => {
+    const batch = db.batch();
+    db.collection("plugs").where('user', "==", user.uid).get().then(snap => {
+      snap.forEach(d => {
+        const ref = db.collection('plugs').doc(d.id);
+        batch.update(ref, {
+          available: !available
+        })
+        batch.commit().then(() =>  {setA(!available)});
+      })
+    });
+  }
   useEffect(() => {
     db.collection("plugs")
       .onSnapshot(function(doc) {
@@ -109,6 +123,7 @@ function App() {
       db.collection('plugs').where('user', '==', user.uid).get()
       .then(s => {
         if (s.docs[0]) setC(true);
+        setA(s.docs[0].data().available);
       })
     }
   }, [user]);
@@ -121,9 +136,8 @@ function App() {
           <ListItem button>
             <ListItemText primary={"Accept Customers"} />
             <Switch
-              // checked={state.checkedA}
-              // onChange={handleChange('checkedA')}
-              value="checkedA"
+              checked={available}
+              onChange={toggleAvailability}
               inputProps={{ 'aria-label': 'secondary checkbox' }}
             />
           </ListItem>
