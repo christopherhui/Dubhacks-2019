@@ -130,7 +130,7 @@ function App() {
             </IconButton>
           )}
           <Typography variant="h6" className={classes.title}>
-            EVChargeUp
+            chargeUp
           </Typography>
           {user && (
             <Button color="inherit" onClick={() => { firebase.auth().signOut() }}>Log out</Button>

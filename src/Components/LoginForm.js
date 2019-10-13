@@ -25,7 +25,7 @@ export default function LoginForm({ firebase }) {
           <Form onSubmit={handleSubmit}>
             <Form.Field>
               <label>Email Address</label>
-              <input type="text" placeholder='Email Address' name="email" onChange={handleChange} value={values.email} />
+              <input type="email" placeholder='Email Address' name="email" onChange={handleChange} value={values.email} />
             </Form.Field>
             <Form.Field>
               <label>Password</label>
