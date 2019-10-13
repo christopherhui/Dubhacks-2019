@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import LoginForm from './Components/LoginForm';
+import AccountSettings from './Components/AccountSettings';
 import 'semantic-ui-css/semantic.min.css';
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firebase-firestore";
 import { makeStyles } from '@material-ui/core/styles';
-import { AppBar, Container, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton } from '@material-ui/core';
+import { AppBar, Container, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton, Switch } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import GoogleMapReact from 'google-map-react';
@@ -56,9 +57,11 @@ function App() {
   let [ user, setUser ] = useState(firebase.auth().currentUser);
   firebase.auth().onAuthStateChanged(setUser);
   const classes = useStyles();
+  const [inAccountsPage, setInAccountsPage] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
   const [dockInfo, setDockInfo] = useState();
+  let [ c, setC ] = useState(false);
   const [coords, setCoords] = useState({
     lat: 47.6593953,
     lng: -122.3093366
@@ -102,16 +105,37 @@ function App() {
           );
         }));
     });
-  }, []);
+    if (user) {
+      db.collection('plugs').where('user', '==', user.uid).get()
+      .then(s => {
+        if (s.docs[0]) setC(true);
+      })
+    }
+  }, [user]);
   const drawer = (
     <div>
       <div className={classes.toolbar} />
       <Divider />
       <List>
-        <ListItem button>
-          <ListItemText primary={"Charging Station Mode"} />
+        {c ? (
+          <ListItem button>
+            <ListItemText primary={"Accept Customers"} />
+            <Switch
+              // checked={state.checkedA}
+              // onChange={handleChange('checkedA')}
+              value="checkedA"
+              inputProps={{ 'aria-label': 'secondary checkbox' }}
+            />
+          </ListItem>
+        ) : (
+          <ListItem>
+            <p><b>Please add your address under the Account Settings section in order to accept customers.</b></p>
+          </ListItem>
+        )}
+        <ListItem button onClick={() => { setInAccountsPage(false); handleDrawerToggle() }}>
+          <ListItemText primary={"Home"} />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => { setInAccountsPage(true); handleDrawerToggle() }}>
           <ListItemText primary={"Account Settings"} />
         </ListItem>
         <ListItem button onClick={() => { firebase.auth().signOut(); handleDrawerToggle(); }}>
@@ -130,7 +154,7 @@ function App() {
             </IconButton>
           )}
           <Typography variant="h6" className={classes.title}>
-            chargeUp
+            chargeUP
           </Typography>
           {user && (
             <Button color="inherit" onClick={() => { firebase.auth().signOut() }}>Log out</Button>
@@ -154,34 +178,42 @@ function App() {
           </Drawer>
         </Hidden>
       </nav>
-      {user ? (
-        <div>
-          <div style={{height: '100vh', width: '100vw', position: 'fixed'}}>
-            <GoogleMapReact
-              bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
-              defaultCenter={coords}
-              defaultZoom={15}
-              yesIWantToUseGoogleMapApiInternals
-            >
-              {locations}
-            </GoogleMapReact>
-          </div>
-          <Drawer
-            anchor="bottom"
-            onClose={handleBottomToggle}
-            open={dockOpen}
-          >
-            <Container>
-              {dockInfo && (
-                <div style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
-                  <h1>{dockInfo.name}</h1>
-                  <Button>Reserve this EV Charging Station</Button>
-                  <a href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${dockInfo.location.latitude},${dockInfo.location.longitude}`}><Button>Navigate via Google Maps</Button></a>
+      {user ? 
+        (
+          <React.Fragment>
+            {inAccountsPage ? (
+              <AccountSettings firebase={firebase} />
+            ) : (
+              <div>
+                <div style={{height: '100vh', width: '100vw', position: 'fixed'}}>
+                  <GoogleMapReact
+                    bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
+                    defaultCenter={coords}
+                    defaultZoom={15}
+                    yesIWantToUseGoogleMapApiInternals
+                  >
+                    {locations}
+                  </GoogleMapReact>
                 </div>
-              )}
-            </Container>
-          </Drawer>
-        </div>
+                <Drawer
+                  anchor="bottom"
+                  onClose={handleBottomToggle}
+                  open={dockOpen}
+                >
+                  <Container>
+                    {dockInfo && (
+                      <div style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+                        <h1>{dockInfo.name}</h1>
+                        <Button>Reserve this EV Charging Station</Button>
+                        <a href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${dockInfo.location.latitude},${dockInfo.location.longitude}`}><Button>Navigate via Google Maps</Button></a>
+                      </div>
+                    )}
+                  </Container>
+                </Drawer>
+              </div>
+            )
+          }
+        </React.Fragment>
       ) : (
         <LoginForm firebase={firebase} />
       )}
