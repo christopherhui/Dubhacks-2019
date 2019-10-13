@@ -6,17 +6,17 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 
 firebase.initializeApp({
-  apiKey: "AIzaSyCP46j4c3quwFHwQRxgD-E3T4SwZEa2qog",
-  authDomain: "dubhacks-e68df.firebaseapp.com",
-  databaseURL: "https://dubhacks-e68df.firebaseio.com",
-  projectId: "dubhacks-e68df",
-  storageBucket: "dubhacks-e68df.appspot.com",
-  messagingSenderId: "840565739695",
-  appId: "1:840565739695:web:859e3211e34c0a5f77045a"
+  apiKey: "AIzaSyCGAepexaDfdV2CBw56IqV1D2Ia5NjpFZ4",
+  authDomain: "genuine-essence-255720.firebaseapp.com",
+  databaseURL: "https://genuine-essence-255720.firebaseio.com",
+  projectId: "genuine-essence-255720",
+  storageBucket: "genuine-essence-255720.appspot.com",
+  messagingSenderId: "204865783620",
+  appId: "1:204865783620:web:d41af47d3c97d77046b911"
 });
 
 function App() {
-  let [ user, setUser ] = useState(firebase.auth().currentUser);
+  let [user, setUser] = useState(firebase.auth().currentUser);
   firebase.auth().onAuthStateChanged(setUser);
   return (
     <React.Fragment>
@@ -26,8 +26,8 @@ function App() {
           <Button onClick={() => { firebase.auth().signOut() }}>Log out</Button>
         </Container>
       ) : (
-        <LoginForm firebase={firebase} />
-      )}
+          <LoginForm firebase={firebase} />
+        )}
     </React.Fragment>
   );
 }
