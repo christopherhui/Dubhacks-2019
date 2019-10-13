@@ -11,6 +11,10 @@ import MailIcon from '@material-ui/icons/Mail';
 import MenuIcon from '@material-ui/icons/Menu';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 
+import GoogleMapReact from 'google-map-react';
+
+const AnyReactComponent = ({ text }) => <div>{text}</div>;
+
 firebase.initializeApp({
   apiKey: "AIzaSyCP46j4c3quwFHwQRxgD-E3T4SwZEa2qog",
   authDomain: "dubhacks-e68df.firebaseapp.com",
@@ -57,8 +61,19 @@ function App() {
   let [ user, setUser ] = useState(firebase.auth().currentUser);
   firebase.auth().onAuthStateChanged(setUser);
   const classes = useStyles();
-  const theme = useTheme();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [coords, setCoords] = useState({
+    lat: 47.6593953,
+    lng: -122.3093366
+  });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(x => {
+      setCoords({
+        lat: x.coords.latitude,
+        lng: x.coords.longitude,
+      });
+    });
+  }
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -120,11 +135,20 @@ function App() {
           </Drawer>
         </Hidden>
       </nav>
-      <br />
       {user ? (
-        <Container>
-          <h1>logged in.</h1>
-        </Container>
+        <div style={{height: '100vh', width: '100vw', position: 'fixed'}}>
+          <GoogleMapReact
+            bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
+            defaultCenter={coords}
+            defaultZoom={15}
+          >
+            <AnyReactComponent
+              lat={59.955413}
+              lng={30.337844}
+              text="My Marker"
+            />
+          </GoogleMapReact>
+        </div>
       ) : (
         <LoginForm firebase={firebase} />
       )}
