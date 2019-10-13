@@ -41,7 +41,31 @@ export default function AccountSettings ({ firebase }) {
                         var formatted_address = body.results[0].formatted_address;
                         var yLat = coords.lat;
                         var yLong = coords.lng;
-                        setSubmitting(false);
+                        console.log(formatted_address, yLat, yLong);
+                        if (c.user) {
+                          const batch = db.batch();
+                          db.collection("plugs").where('user', "==", locationId).get().then(snap => {
+                            snap.forEach(d => {
+                              const ref = db.collection('plugs').doc(d.id);
+                              batch.update(ref, {
+                                name: formatted_address,
+                                address: formatted_address,
+                                location: new firebase.firestore.GeoPoint(yLat, yLong),
+                                phone
+                              })
+                              batch.commit().then(() => { setSubmitting(false) });
+                            })
+                          });
+                        } else {
+                          db.collection("plugs").add({
+                            name: formatted_address,
+                            address: formatted_address,
+                            location: new firebase.firestore.GeoPoint(yLat, yLong),
+                            phone,
+                            user: locationId,
+                            available: false
+                          }).then(() => { setSubmitting(false) });
+                        }
                     }
                 });
             }}
