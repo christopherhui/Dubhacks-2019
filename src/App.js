@@ -204,7 +204,7 @@ function App() {
                     {dockInfo && (
                       <div style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
                         <h1>{dockInfo.name}</h1>
-                        <Button>Reserve this EV Charging Station</Button>
+                        {dockInfo.available && <Button>Reserve this EV Charging Station</Button>}
                         <a href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${dockInfo.location.latitude},${dockInfo.location.longitude}`}><Button>Navigate via Google Maps</Button></a>
                       </div>
                     )}
