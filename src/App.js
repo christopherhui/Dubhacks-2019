@@ -5,7 +5,7 @@ import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firebase-firestore";
 import { makeStyles } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton } from '@material-ui/core';
+import { AppBar, Container, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import GoogleMapReact from 'google-map-react';
@@ -57,6 +57,8 @@ function App() {
   firebase.auth().onAuthStateChanged(setUser);
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dockOpen, setDockOpen] = useState(false);
+  const [dockInfo, setDockInfo] = useState();
   const [coords, setCoords] = useState({
     lat: 47.6593953,
     lng: -122.3093366
@@ -74,18 +76,30 @@ function App() {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+  const handleBottomToggle = () => {
+    setDockOpen(!dockOpen);
+    setDockInfo();
+  };
   useEffect(() => {
     db.collection("plugs").where('available', "==", true)
       .onSnapshot(function(doc) {
         setLocations(doc.docs.map((x, i) => {
           let y = x.data();
-          return (<img key={i}
-              src="/marker.svg"
+          return (
+            <Button
+              key={i}
               lat={y.location.latitude}
               lng={y.location.longitude}
+              onClick={() => { setDockInfo(y); setDockOpen(true); }}
+              style={{ minWidth: '0px', padding: '0px' }}
+            >
+              <img 
+              src="/marker.svg"
               alt={y.name}
               style={{ zIndex: 1500, width: 'auto', height: '2rem', top: '0px' }}
-            />);
+              />
+            </Button>
+          );
         }));
     });
   }, []);
@@ -141,15 +155,32 @@ function App() {
         </Hidden>
       </nav>
       {user ? (
-        <div style={{height: '100vh', width: '100vw', position: 'fixed'}}>
-          <GoogleMapReact
-            bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
-            defaultCenter={coords}
-            defaultZoom={15}
-            yesIWantToUseGoogleMapApiInternals
+        <div>
+          <div style={{height: '100vh', width: '100vw', position: 'fixed'}}>
+            <GoogleMapReact
+              bootstrapURLKeys={{ key: "AIzaSyCQrSkOPcIMBM5HpNeVan7MHdcc8rvvC_E" }}
+              defaultCenter={coords}
+              defaultZoom={15}
+              yesIWantToUseGoogleMapApiInternals
+            >
+              {locations}
+            </GoogleMapReact>
+          </div>
+          <Drawer
+            anchor="bottom"
+            onClose={handleBottomToggle}
+            open={dockOpen}
           >
-            {locations}
-          </GoogleMapReact>
+            <Container>
+              {dockInfo && (
+                <div style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+                  <h1>{dockInfo.name}</h1>
+                  <Button>Reserve this EV Charging Station</Button>
+                  <a href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${dockInfo.location.latitude},${dockInfo.location.longitude}`}><Button>Navigate via Google Maps</Button></a>
+                </div>
+              )}
+            </Container>
+          </Drawer>
         </div>
       ) : (
         <LoginForm firebase={firebase} />
