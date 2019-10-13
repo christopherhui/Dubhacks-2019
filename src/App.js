@@ -84,7 +84,7 @@ function App() {
     setDockInfo();
   };
   useEffect(() => {
-    db.collection("plugs").where('available', "==", true)
+    db.collection("plugs")
       .onSnapshot(function(doc) {
         setLocations(doc.docs.map((x, i) => {
           let y = x.data();
@@ -97,7 +97,7 @@ function App() {
               style={{ minWidth: '0px', padding: '0px' }}
             >
               <img 
-              src="/marker.svg"
+              src={y.available ? "/marker.svg" : "/marker-alt.svg"}
               alt={y.name}
               style={{ zIndex: 1500, width: 'auto', height: '2rem', top: '0px' }}
               />

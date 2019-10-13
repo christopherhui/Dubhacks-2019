@@ -41,7 +41,7 @@ export default function AccountSettings ({ firebase }) {
                         var formatted_address = body.results[0].formatted_address;
                         var yLat = coords.lat;
                         var yLong = coords.lng;
-                        console.log(formatted_address, yLat, yLong);
+                        setSubmitting(false);
                     }
                 });
             }}
