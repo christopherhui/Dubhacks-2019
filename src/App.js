@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import LoginForm from './Components/LoginForm';
 import AccountSettings from './Components/AccountSettings';
+import { Label } from 'semantic-ui-react';
 import 'semantic-ui-css/semantic.min.css';
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firebase-firestore";
 import { makeStyles } from '@material-ui/core/styles';
-import { AppBar, Container, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton, Switch } from '@material-ui/core';
+import { AppBar, Container, Toolbar, Typography, Button, Hidden, Drawer, Divider, List, ListItemText, ListItem, IconButton, Switch, Badge } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import GoogleMapReact from 'google-map-react';
@@ -218,7 +219,7 @@ function App() {
                     {dockInfo && (
                       <div style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
                         <h1>{dockInfo.name}</h1>
-                        {dockInfo.available && <Button>Reserve this EV Charging Station</Button>}
+                        {dockInfo.available ? <Button>Reserve this EV Charging Station</Button> : <Label color="red">Charging Station is occupied</Label>}
                         <a href={`https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${dockInfo.location.latitude},${dockInfo.location.longitude}`}><Button>Navigate via Google Maps</Button></a>
                       </div>
                     )}
