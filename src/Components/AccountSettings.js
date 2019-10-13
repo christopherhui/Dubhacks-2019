@@ -5,6 +5,7 @@ import axios from 'axios';
 
 
 export default function AccountSettings ({ firebase }) {
+  let [ errorMessage, setErrorMessage ] = useState("");
   const db = firebase.firestore();
   let [ c, setC ] = useState(undefined);
   useEffect(() => {
@@ -17,6 +18,9 @@ export default function AccountSettings ({ firebase }) {
   return (
     <Container>
       <h1>Account Settings</h1>
+      {errorMessage && (
+        <Message error>{errorMessage.message}</Message>
+      )}
         {c && (
           <Formik
             initialValues={{ address: c.address, phone: c.phone }}
@@ -33,34 +37,39 @@ export default function AccountSettings ({ firebase }) {
                 }).then((response) => {
                     if (response.status === 200) {
                         const body = response.data;
-                        var coords = body.results[0].geometry.location;
-                        var formatted_address = body.results[0].formatted_address;
-                        var yLat = coords.lat;
-                        var yLong = coords.lng;
-                        console.log(formatted_address, yLat, yLong);
-                        if (c.user) {
-                          const batch = db.batch();
-                          db.collection("plugs").where('user', "==", locationId).get().then(snap => {
-                            snap.forEach(d => {
-                              const ref = db.collection('plugs').doc(d.id);
-                              batch.update(ref, {
-                                name: formatted_address,
-                                address: formatted_address,
-                                location: new firebase.firestore.GeoPoint(yLat, yLong),
-                                phone
+                        try {
+                          var coords = body.results[0].geometry.location;
+                          var formatted_address = body.results[0].formatted_address;
+                          var yLat = coords.lat;
+                          var yLong = coords.lng;
+                          console.log(formatted_address, yLat, yLong);
+                          if (c.user) {
+                            const batch = db.batch();
+                            db.collection("plugs").where('user', "==", locationId).get().then(snap => {
+                              snap.forEach(d => {
+                                const ref = db.collection('plugs').doc(d.id);
+                                batch.update(ref, {
+                                  name: formatted_address,
+                                  address: formatted_address,
+                                  location: new firebase.firestore.GeoPoint(yLat, yLong),
+                                  phone
+                                })
+                                batch.commit().then(() => { setSubmitting(false); setErrorMessage(""); });
                               })
-                              batch.commit().then(() => { setSubmitting(false) });
-                            })
-                          });
-                        } else {
-                          db.collection("plugs").add({
-                            name: formatted_address,
-                            address: formatted_address,
-                            location: new firebase.firestore.GeoPoint(yLat, yLong),
-                            phone,
-                            user: locationId,
-                            available: false
-                          }).then(() => { setSubmitting(false) });
+                            });
+                          } else {
+                            db.collection("plugs").add({
+                              name: formatted_address,
+                              address: formatted_address,
+                              location: new firebase.firestore.GeoPoint(yLat, yLong),
+                              phone,
+                              user: locationId,
+                              available: false
+                            }).then(() => { setSubmitting(false); setErrorMessage(""); });
+                          }
+                        } catch (e) {
+                          setErrorMessage(new Error("Address is not valid. Please try again."));
+                          setSubmitting(false);
                         }
                     }
                 });
